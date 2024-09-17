@@ -2,8 +2,9 @@
   "name": "express-base-esm",
   "version": "1.2.0",
   "private": true,
+  "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./bin/www",
+    "dev": "nodemon --env-file=.env index.js",
     "seed": "node ./cli/db-init.js",
     "backup": "node ./cli/db-backup.js",
     "debug": "DEBUG=express:* node ./bin/www",
