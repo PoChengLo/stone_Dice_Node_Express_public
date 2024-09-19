@@ -13,11 +13,11 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get("/category", async (req, res) => {
-  const sql = "SELECT * FROM prod_list LIMIT 3";
+router.get("/category/1", async (req, res) => {
+  const sql = "SELECT * FROM prod_list ";
   const [rows] = await db.query(sql);
   // rows 讀取的資料
-  res.json({ rows });
+  res.json(rows);
 });
 
 export default router;
