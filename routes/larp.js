@@ -14,13 +14,24 @@ router.get("/:larpid", async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  const sql = "SELECT * FROM larp_list WHERE larp_type=1";
+  // const loc = req.query.loc || 0;
+  const sql = `SELECT *
+  FROM larp_list ll
+  JOIN larp_loc lc ON ll.larp_id = lc.larp_id
+  WHERE ll.larp_type = 1`;
+
+  // const sql = `SELECT ll.larp_id, ll.larp_img, ll.larp_name, ll.larp_price
+  // FROM larp_list ll
+  // JOIN larp_loc lc ON ll.larp_id = lc.larp_id
+  // WHERE ll.larp_type = 1`;
+
+  // if (loc > 0) {
+  //   sql += `AND lc.loc_id = ?`;
+  // }
+  // sql += `GROUP BY ll.larp_id`;
+
   const [rows] = await db.query(sql);
   // rows 讀取的資料
-  if (rows.length === 0) {
-    return res.status(404).json({ message: "Product not found" });
-  }
-
   res.json(rows);
 });
 
