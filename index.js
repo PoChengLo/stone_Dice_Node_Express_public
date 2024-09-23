@@ -1,5 +1,6 @@
 import express from "express";
 import boardGame from "./routes/board-game.js";
+import larp from './routes/larp.js'
 import multer from "multer";
 import db from "./configs/mysql.js";
 import cors from "cors";
@@ -35,9 +36,6 @@ app.use((req, res, next) => {
 //   res.json(req.body);
 // });
 
-// 使用靜態網頁public
-app.use(express.static("public"));
-
 // 測試資料庫資料是否有提取到，可修改prod_list為自己的資料表
 // app.get("/try-db", async (req, res) => {
 //   const sql = "SELECT * FROM prod_list LIMIT 3";
@@ -49,11 +47,17 @@ app.use(express.static("public"));
 // 桌遊商品路由
 app.use("/board-game", boardGame);
 
+// 密室逃脫路由
+app.use("/larp",larp);
+
 // 定義路由，get 接收方式，"/" 路徑
 app.get("/", (req, res) => {
   res.send(`<h1>您好</h1>`);
 });
 
+// 使用靜態網頁public，需要放在所有路由後面、404前面
+app.use(express.static("public"));
+
 app.listen(port, () => {
-  console.log(`${port}`);
+  console.log(`server啟動: ${port}`);
 });
