@@ -1,9 +1,10 @@
 import express from "express";
 import boardGame from "./routes/board-game.js";
-import larp from './routes/larp.js'
+import larp from "./routes/larp.js";
 import multer from "multer";
 import db from "./configs/mysql.js";
 import cors from "cors";
+import loginRouter from "./routes/auth.js";
 const app = express();
 const port = process.env.WEB_PORT || 3002;
 const upload = multer();
@@ -48,7 +49,10 @@ app.use((req, res, next) => {
 app.use("/board-game", boardGame);
 
 // 密室逃脫路由
-app.use("/larp",larp);
+app.use("/larp", larp);
+
+// 登入路由
+app.use("/api", loginRouter);
 
 // 定義路由，get 接收方式，"/" 路徑
 app.get("/", (req, res) => {

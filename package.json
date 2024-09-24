@@ -8,12 +8,14 @@
     "seed": "node ./cli/db-init.js",
     "backup": "node ./cli/db-backup.js",
     "debug": "DEBUG=express:* node ./bin/www",
-    "debug-win": "set DEBUG=express:* & node ./bin/www"
+    "debug-win": "set DEBUG=express:* & node ./bin/www",
+    "start": "node index.js"
   },
   "dependencies": {
     "app-root-path": "^3.1.0",
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",
     "colors": "^1.4.0",
     "cookie-parser": "~1.4.6",
@@ -21,7 +23,7 @@
     "crypto": "^1.0.1",
     "debug": "~4.3.4",
     "dotenv": "^16.4.5",
-    "express": "4.19.2",
+    "express": "^4.19.2",
     "express-session": "^1.18.0",
     "http-errors": "~2.0.0",
     "jsonwebtoken": "^9.0.2",
@@ -30,7 +32,7 @@
     "moment": "^2.30.1",
     "morgan": "~1.10.0",
     "multer": "^1.4.5-lts.1",
-    "mysql2": "^3.9.7",
+    "mysql2": "^3.11.3",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.13",
     "otpauth": "^9.2.4",
