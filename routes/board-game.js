@@ -35,14 +35,14 @@ router.get("/", async (req, res) => {
   });
 });
 
-router.get("/:prod_id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   // 提取請求中的路由，設置為變數
-  const { prod_id } = req.params;
-  const sql = "SELECT * FROM prod_list WHERE prod_id = ?";
+  const { id } = req.params;
+  const sql = "SELECT * FROM prod_list WHERE id = ?";
 
   try {
     // 使用動態路由
-    const [row] = await db.query(sql, [prod_id]);
+    const [row] = await db.query(sql, [id]);
     res.json(row);
   } catch (error) {
     res.status(500).json({ error: "Database query error" });
