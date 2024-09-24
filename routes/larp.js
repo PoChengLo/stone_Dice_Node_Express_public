@@ -20,9 +20,18 @@ router.get("/", async (req, res) => {
 router.get("/:larpid", async (req, res) => {
   const { larpid } = req.params;
   const sql = "SELECT * FROM larp_list WHERE larp_type=1 AND id=?";
-  const [rows] = await db.query(sql, [larpid]);
-  // rows 讀取的資料
-  res.json(rows);
+  const [row] = await db.query(sql, [larpid]);
+
+  const sql2 = `
+  SELECT *
+  FROM larp_list ll
+  JOIN larp_loc lc ON ll.id = lc.id
+  JOIN larp_tag lt ON ll.id = lt.id
+  JOIN tag_list tl ON tl.tag_id=lt.tag_id
+  WHERE ll.larp_type = 1
+  `;
+  const [rows] = await db.query(sql2);
+  res.json({ single: row, all: rows });
 });
 
 router.get("/order", async (req, res) => {
