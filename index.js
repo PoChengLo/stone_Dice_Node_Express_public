@@ -4,6 +4,7 @@ import larp from "./routes/larp.js";
 import multer from "multer";
 import db from "./configs/mysql.js";
 import cors from "cors";
+import loginRouter from "./routes/auth.js";
 import Ecpay from "./routes/ecpay-test-only.js";
 const app = express();
 const port = process.env.WEB_PORT || 3002;
@@ -50,6 +51,9 @@ app.use("/board-game", boardGame);
 
 // 密室逃脫路由
 app.use("/larp", larp);
+
+// 登入路由
+app.use("/api", loginRouter);
 
 // 綠界金流 test
 app.use("/ecpay", Ecpay);
