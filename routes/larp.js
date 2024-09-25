@@ -26,31 +26,13 @@ router.get("/:larpid", async (req, res) => {
   SELECT *
   FROM larp_list ll
   JOIN larp_loc lc ON ll.id = lc.id
+  JOIN loc_list ls ON lc.loc_id = ls.loc_id
   JOIN larp_tag lt ON ll.id = lt.id
   JOIN tag_list tl ON tl.tag_id=lt.tag_id
   WHERE ll.larp_type = 1
   `;
   const [rows] = await db.query(sql2);
   res.json({ single: row, all: rows });
-});
-
-router.get("/order", async (req, res) => {
-  try {
-    const sql = `SELECT *
-  FROM larp_list ll
-  JOIN larp_loc lc ON ll.id = lc.id
-  JOIN larp_tag lt ON ll.id = lt.id
-  JOIN tag_list tl ON tl.tag_id=lt.tag_id
-  WHERE ll.larp_type = 1
-  `;
-
-    const [rows] = await db.query(sql);
-    // rows 讀取的資料
-    res.json(rows);
-  } catch {
-    console.log("Error executing query:", error);
-    res.status(500).json({ error: "Database query error" });
-  }
 });
 
 export default router;
