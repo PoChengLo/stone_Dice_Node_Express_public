@@ -52,7 +52,7 @@ app.use("/board-game", boardGame);
 app.use("/larp", larp);
 
 // 登入路由
-app.use("/api", loginRouter);
+app.use("/user-profile", loginRouter);
 
 // 定義路由，get 接收方式，"/" 路徑
 app.get("/", (req, res) => {
