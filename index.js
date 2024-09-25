@@ -53,7 +53,7 @@ app.use("/board-game", boardGame);
 app.use("/larp", larp);
 
 // 登入路由
-app.use("/api", loginRouter);
+app.use("/user-profile", loginRouter);
 
 // 綠界金流 test
 app.use("/ecpay", Ecpay);
