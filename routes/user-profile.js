@@ -91,6 +91,24 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// 動態路由處理
+router.get("/:id/home", async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const [user] = await db.query("SELECT * FROM user_info WHERE user_id = ?", [
+      userId,
+    ]);
+
+    if (user.length > 0) {
+      res.json({ status: "success", data: { user: user[0] } });
+    } else {
+      res.status(404).json({ status: "fail", message: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Database error" });
+  }
+});
+
 // 登出
 router.post("/logout", authenticate, (req, res) => {
   // 清除cookie
