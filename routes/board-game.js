@@ -9,7 +9,7 @@ router.get("/", async (req, res) => {
   // 公式: limit = perpage
   //      offset = (page-1) * perpage
   const page = Number(req.query.page) || 1; // page 預設為 1
-  const perpage = Number(req.query.perpage) || 12; // perpage 預設為 10
+  const perpage = Number(req.query.perpage) || 8; // perpage 預設為 10
   const limit = perpage;
   const offset = (page - 1) * perpage;
 
@@ -35,14 +35,15 @@ router.get("/", async (req, res) => {
   });
 });
 
-router.get("/:prod_id", async (req, res) => {
-  // 提取請求中的路由，設置為變數
-  const { prod_id } = req.params;
-  const sql = "SELECT * FROM prod_list WHERE prod_id = ?";
+router.get("/:id", async (req, res) => {
+
+  const { id } = req.params;
+  const sql = "SELECT * FROM prod_list WHERE id = ?";
+
 
   try {
     // 使用動態路由
-    const [row] = await db.query(sql, [prod_id]);
+    const [row] = await db.query(sql, [id]);
     res.json(row);
   } catch (error) {
     res.status(500).json({ error: "Database query error" });

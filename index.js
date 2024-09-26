@@ -5,6 +5,7 @@ import multer from "multer";
 import db from "./configs/mysql.js";
 import cors from "cors";
 import loginRouter from "./routes/auth.js";
+import Ecpay from "./routes/ecpay-test-only.js";
 const app = express();
 const port = process.env.WEB_PORT || 3002;
 const upload = multer();
@@ -52,7 +53,10 @@ app.use("/board-game", boardGame);
 app.use("/larp", larp);
 
 // 登入路由
-app.use("/api", loginRouter);
+app.use("/user-profile", loginRouter);
+
+// 綠界金流 test
+app.use("/ecpay", Ecpay);
 
 // 定義路由，get 接收方式，"/" 路徑
 app.get("/", (req, res) => {
