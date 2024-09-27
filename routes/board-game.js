@@ -60,7 +60,6 @@ router.get("/", async (req, res) => {
   // 排序，例如價格由低到高 (查詢字串qs: sort=price&order=asc) (順向asc，逆向desc)
   const sort = req.query.sort || "id"; // 預設的排序資料表欄位
   const order = req.query.order || "ASC"; //預設使用順向 asc (1234..)
-
   // 建立sql從句字串
   const orderBy = `ORDER BY ${sort} ${order}`;
 
@@ -73,7 +72,7 @@ router.get("/", async (req, res) => {
   const offset = (page - 1) * perpage;
 
   const sql = `SELECT * FROM prod_list ${where} ${orderBy} LIMIT ${limit} OFFSET ${offset}`;
-  console.log({ sql });
+  console.log(sql);
 
   const [rows] = await db.query(sql);
 
