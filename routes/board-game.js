@@ -47,16 +47,16 @@ router.get("/", async (req, res) => {
 
   // where條件 ---- END
 
-  let orderBy2 = "";
-  const orderby = req.query.orderby;
-  switch (orderby) {
-    case "id_asc":
-      orderBy2 = " ORDER BY id ASC";
-      break;
-    case "id_desc":
-      orderBy2 = " ORDER BY id DESC";
-      break;
-  }
+  // let orderBy2 = "";
+  // const orderby = req.query.orderby;
+  // switch (orderby) {
+  //   case "id_asc":
+  //     orderBy2 = " ORDER BY id ASC";
+  //     break;
+  //   case "id_desc":
+  //     orderBy2 = " ORDER BY id DESC";
+  //     break;
+  // }
   // 排序，例如價格由低到高 (查詢字串qs: sort=price&order=asc) (順向asc，逆向desc)
   const sort = req.query.sort || "id"; // 預設的排序資料表欄位
   const order = req.query.order || "ASC"; //預設使用順向 asc (1234..)
@@ -72,12 +72,14 @@ router.get("/", async (req, res) => {
   const offset = (page - 1) * perpage;
 
   const sql = `SELECT * FROM prod_list ${where} ${orderBy} LIMIT ${limit} OFFSET ${offset}`;
-  console.log(sql);
 
   const [rows] = await db.query(sql);
 
   // 進行分頁時，額外執行sql在此條件下總共多少筆資料
-  const [rows2] = await db.query(`SELECT COUNT(*) AS count FROM prod_list`);
+  const [rows2] = await db.query(
+    `SELECT COUNT(*) AS count FROM prod_list ${where} ${orderBy}`
+  );
+
   const { count } = rows2[0];
   // 計算總頁數
   const pageCount = Math.ceil(count / perpage);
@@ -91,7 +93,6 @@ router.get("/", async (req, res) => {
       page, // 目前頁
       perpage, // 每筆頁數
       rows,
-      where,
     },
   });
 });
