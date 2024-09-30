@@ -36,15 +36,14 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-
-  const { id } = req.params;
+  // 轉為數字
+  const id = Number(req.params.id);
   const sql = "SELECT * FROM prod_list WHERE id = ?";
-
 
   try {
     // 使用動態路由
     const [row] = await db.query(sql, [id]);
-    res.json(row);
+    return res.json({ status: "success", data: { row } });
   } catch (error) {
     res.status(500).json({ error: "Database query error" });
   }
