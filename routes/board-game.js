@@ -110,6 +110,17 @@ router.get("/user-info", async (req, res) => {
   }
 });
 
+router.get("/pay-ship", async (req, res) => {
+  const user_id = Number(req.query.user_id);
+  const sql = `SELECT * FROM recipient_info WHERE user_id = ${user_id}`;
+  try {
+    const [recipient] = await db.query(sql, [user_id]);
+    res.json({ status: "success", data: { recipient } });
+  } catch (error) {
+    res.status(500).json({ error: "Database query error" });
+  }
+});
+
 // 商品單獨頁路由
 router.get("/:id", async (req, res) => {
   // 轉為數字
