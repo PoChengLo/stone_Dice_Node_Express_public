@@ -19,7 +19,7 @@ router.get("/", function (req, res, next) {
   //二、輸入參數
   const TotalAmount = amount;
   const TradeDesc = "商店線上付款";
-  const ItemName = "xx商店購買一批";
+  const ItemName = "石之骰桌遊商品";
   const ReturnURL = "https://www.ecpay.com.tw";
   const OrderResultURL = "http://localhost:3000/board-game/success"; //前端成功頁面
   const ChoosePayment = "ALL";
