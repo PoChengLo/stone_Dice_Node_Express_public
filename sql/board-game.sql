@@ -20,3 +20,6 @@ SELECT pl.*,tl.tag_name FROM prod_list pl  JOIN prod_tag pt ON pl.id = pt.id JOI
 
 -- 測試
 SELECT * FROM recipient_info WHERE user_id = 2024001;
+
+-- 測試
+SELECT * FROM prod_list WHERE prod_sales > 600;
