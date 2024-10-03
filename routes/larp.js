@@ -17,6 +17,16 @@ router.get("/", async (req, res) => {
   res.json(rows);
 });
 
+router.get("/check-page", async (req, res) => {
+  const sql = "SELECT * FROM larp_list WHERE larp_type=1";
+  const [rows] = await db.query(sql);
+
+  const sql2 = "SELECT * FROM loc_list";
+  const [locs] = await db.query(sql2);
+
+  res.json({ escape: rows, location: locs });
+});
+
 router.get("/:larpid", async (req, res) => {
   const { larpid } = req.params;
   const sql = "SELECT * FROM larp_list WHERE larp_type=1 AND id=?";
