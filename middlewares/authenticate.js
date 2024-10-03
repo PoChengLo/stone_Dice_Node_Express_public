@@ -1,36 +1,35 @@
 import jsonwebtoken from "jsonwebtoken";
-
-// 存取`.env`設定檔案使用
 import "dotenv/config.js";
 
-// 獲得加密用字串
 const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
-// 中介軟體middleware，用於檢查授權(authenticate)
 export default function authenticate(req, res, next) {
-  // const token = req.headers['authorization']
+  // 從 cookies 或 Authorization header 中取得 token
+  const authHeader = req.headers.authorization;
   const token =
-    req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
-  // console.log(token)
+    req.cookies?.accessToken || (authHeader && authHeader.split(" ")[1]);
 
-  // if no token
+  // 檢查是否有 token
   if (!token) {
-    return res.json({
+    return res.status(401).json({
       status: "error",
       message: "授權失敗，沒有存取令牌",
     });
   }
 
-  // verify的callback會帶有decoded payload(解密後的有效資料)，就是user的資料
+  // 驗證 token 的合法性
   jsonwebtoken.verify(token, accessTokenSecret, (err, user) => {
     if (err) {
-      return res.json({
+      // 判斷具體的錯誤類型
+      const message =
+        err.name === "TokenExpiredError" ? "Token已過期" : "不合法的存取令牌";
+      return res.status(403).json({
         status: "error",
-        message: "不合法的存取令牌",
+        message,
       });
     }
 
-    // 將user資料加到req中
+    // 成功驗證後，將解碼的 user 資料附加到 req 物件中
     req.user = user;
     next();
   });

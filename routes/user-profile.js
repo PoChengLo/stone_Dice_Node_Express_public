@@ -9,6 +9,7 @@ const router = express.Router();
 // 檢查登入狀態用
 router.get("/check", authenticate, async (req, res) => {
   try {
+    console.log("User ID from token:", req.user.id); // 檢查 user.id 是不是從 token 解析出來的
     const [user] = await db.query("SELECT * FROM user_info WHERE user_id = ?", [
       req.user.id,
     ]);
@@ -19,9 +20,7 @@ router.get("/check", authenticate, async (req, res) => {
         .json({ status: "error", message: "User not found" });
     }
 
-    // 不回傳密碼值
     delete user.password;
-
     return res.json({ status: "success", data: { user } });
   } catch (error) {
     console.error("Error fetching user:", error);
@@ -72,9 +71,7 @@ router.post("/login", async (req, res) => {
     const accessToken = jsonwebtoken.sign(
       returnUser,
       process.env.ACCESS_TOKEN_SECRET,
-      {
-        expiresIn: "3d",
-      }
+      { expiresIn: "3d" }
     );
 
     // 設定 httpOnly cookie 來儲存 access token
