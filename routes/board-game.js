@@ -4,6 +4,7 @@ import db from "../configs/mysql.js";
 const router = express.Router();
 
 // 路由處理器
+// 桌遊商品列表頁路由
 router.get("/", async (req, res) => {
   // where條件 ---- START
   const conditions = [];
@@ -97,6 +98,30 @@ router.get("/", async (req, res) => {
   });
 });
 
+// 桌遊使用者資料頁面
+router.get("/user-info", async (req, res) => {
+  const user_id = Number(req.query.user_id);
+  const sql = `SELECT user_id, user_name, mobile FROM user_info WHERE user_id = ${user_id}`;
+  try {
+    const [user] = await db.query(sql, [user_id]);
+    res.json({ status: "success", data: { user } });
+  } catch (error) {
+    res.status(500).json({ error: "Database query error" });
+  }
+});
+
+router.get("/pay-ship", async (req, res) => {
+  const user_id = Number(req.query.user_id);
+  const sql = `SELECT * FROM recipient_info WHERE user_id = ${user_id}`;
+  try {
+    const [recipient] = await db.query(sql, [user_id]);
+    res.json({ status: "success", data: { recipient } });
+  } catch (error) {
+    res.status(500).json({ error: "Database query error" });
+  }
+});
+
+// 商品單獨頁路由
 router.get("/:id", async (req, res) => {
   // 轉為數字
   const id = Number(req.params.id);
