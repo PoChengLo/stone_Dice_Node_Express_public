@@ -108,9 +108,28 @@ router.get("/:id/home", async (req, res) => {
 
 // 登出
 router.post("/logout", authenticate, (req, res) => {
-  // 清除cookie
-  res.clearCookie("accessToken", { httpOnly: true });
-  res.json({ status: "success", data: null });
+  try {
+    // 清除 cookie，注意配置要和設置時一致
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", // 或 'strict'，根據你的需求
+      // 如果有設定 domain，也要加上
+      // domain: 'your-domain.com'
+    });
+
+    // 只發送一次回應
+    return res.status(200).json({
+      status: "success",
+      message: "已成功登出",
+    });
+  } catch (error) {
+    console.error("登出錯誤:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "登出失敗",
+    });
+  }
 });
 
 export default router;
