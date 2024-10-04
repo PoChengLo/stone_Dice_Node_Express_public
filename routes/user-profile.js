@@ -9,6 +9,7 @@ const router = express.Router();
 // 檢查登入狀態用
 router.get("/check", authenticate, async (req, res) => {
   try {
+    console.log("User ID from token:", req.user.id); // 檢查 user.id 是不是從 token 解析出來的
     const [user] = await db.query("SELECT * FROM user_info WHERE user_id = ?", [
       req.user.id,
     ]);
@@ -19,9 +20,7 @@ router.get("/check", authenticate, async (req, res) => {
         .json({ status: "error", message: "User not found" });
     }
 
-    // 不回傳密碼值
     delete user.password;
-
     return res.json({ status: "success", data: { user } });
   } catch (error) {
     console.error("Error fetching user:", error);
@@ -72,9 +71,7 @@ router.post("/login", async (req, res) => {
     const accessToken = jsonwebtoken.sign(
       returnUser,
       process.env.ACCESS_TOKEN_SECRET,
-      {
-        expiresIn: "3d",
-      }
+      { expiresIn: "3d" }
     );
 
     // 設定 httpOnly cookie 來儲存 access token
@@ -111,9 +108,28 @@ router.get("/:id/home", async (req, res) => {
 
 // 登出
 router.post("/logout", authenticate, (req, res) => {
-  // 清除cookie
-  res.clearCookie("accessToken", { httpOnly: true });
-  res.json({ status: "success", data: null });
+  try {
+    // 清除 cookie，注意配置要和設置時一致
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", // 或 'strict'，根據你的需求
+      // 如果有設定 domain，也要加上
+      // domain: 'your-domain.com'
+    });
+
+    // 只發送一次回應
+    return res.status(200).json({
+      status: "success",
+      message: "已成功登出",
+    });
+  } catch (error) {
+    console.error("登出錯誤:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "登出失敗",
+    });
+  }
 });
 
 export default router;

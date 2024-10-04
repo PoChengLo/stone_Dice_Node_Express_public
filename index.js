@@ -6,6 +6,7 @@ import db from "./configs/mysql.js";
 import cors from "cors";
 import loginRouter from "./routes/user-profile.js";
 import Ecpay from "./routes/ecpay-test-only.js";
+import cookieParser from "cookie-parser";
 const app = express();
 const port = process.env.WEB_PORT || 3002;
 const upload = multer();
@@ -54,6 +55,9 @@ app.use("/larp", larp);
 
 // 登入路由
 app.use("/backend/user-profile", loginRouter);
+
+// 剖折 Cookie
+app.use(cookieParser());
 
 // 綠界金流 test
 app.use("/ecpay", Ecpay);
