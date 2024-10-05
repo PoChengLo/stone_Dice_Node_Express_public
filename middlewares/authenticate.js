@@ -5,45 +5,34 @@ const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
 export default function authenticate(req, res, next) {
   console.log("--- Authenticate Middleware Start ---");
-  console.log("Received headers:", JSON.stringify(req.headers, null, 2));
-  console.log("Received cookies:", req.cookies);
+  console.log("Cookies:", req.cookies);
 
-  let token;
-  if (req.cookies && req.cookies.accessToken) {
-    token = req.cookies.accessToken;
-  } else if (req.headers.cookie) {
-    const cookies = req.headers.cookie.split(";").reduce((acc, cookie) => {
-      const [key, value] = cookie.trim().split("=");
-      acc[key] = value;
-      return acc;
-    }, {});
-    token = cookies.accessToken;
-  }
-
-  console.log("Extracted token:", token);
+  const token = req.cookies?.accessToken;
 
   if (!token) {
-    console.log("No token found");
+    console.log("No token found in cookies");
     return res.status(401).json({
       status: "error",
       message: "授權失敗，沒有存取令牌",
     });
   }
 
-  // 驗證 token 的合法性
   try {
-    const decoded = jsonwebtoken.verify(token, accessTokenSecret);
-    console.log("Decoded token:", JSON.stringify(decoded, null, 2));
+    const decoded = jsonwebtoken.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    console.log("Token decoded successfully:", decoded);
     req.user = decoded;
-    console.log("Token verified successfully");
     next();
   } catch (err) {
-    console.error("Token verification error:", err);
-    const message =
-      err.name === "TokenExpiredError" ? "Token已過期" : "不合法的存取令牌";
+    console.error("Token verification error:", err.name, err.message);
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({
+        status: "error",
+        message: "Token已過期",
+      });
+    }
     return res.status(403).json({
       status: "error",
-      message,
+      message: "不合法的存取令牌",
     });
   } finally {
     console.log("--- Authenticate Middleware End ---");
