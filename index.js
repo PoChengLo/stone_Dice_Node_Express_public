@@ -7,6 +7,7 @@ import cors from "cors";
 import loginRouter from "./routes/user-profile.js";
 import Ecpay from "./routes/ecpay-test-only.js";
 import cookieParser from "cookie-parser";
+import shipment711 from "./routes/shipment.js";
 const app = express();
 const port = process.env.WEB_PORT || 3002;
 const upload = multer();
@@ -61,6 +62,9 @@ app.use(cookieParser());
 
 // 綠界金流 test
 app.use("/ecpay", Ecpay);
+
+// 7-11 門市選擇
+app.use("/shipment", shipment711);
 
 // 定義路由，get 接收方式，"/" 路徑
 app.get("/", (req, res) => {
