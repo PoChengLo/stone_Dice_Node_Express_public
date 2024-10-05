@@ -8,25 +8,31 @@ const router = express.Router();
 
 // 檢查登入狀態用
 router.get("/check", authenticate, async (req, res) => {
+  console.log("--- /user-profile/check Route Start ---");
   try {
-    console.log("User ID from token:", req.user.id); // 檢查 user.id 是不是從 token 解析出來的
+    console.log("User ID from token:", req.user.id);
     const [user] = await db.query("SELECT * FROM user_info WHERE user_id = ?", [
       req.user.id,
     ]);
 
     if (!user) {
+      console.log("User not found in database");
       return res
         .status(404)
         .json({ status: "error", message: "User not found" });
     }
 
+    console.log("User found:", JSON.stringify(user, null, 2));
     delete user.password;
+    console.log("Sending response");
     return res.json({ status: "success", data: { user } });
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error in /check route:", error);
     return res
       .status(500)
       .json({ status: "error", message: "Database query failed" });
+  } finally {
+    console.log("--- /user-profile/check Route End ---");
   }
 });
 

@@ -11,6 +11,9 @@ const app = express();
 const port = process.env.WEB_PORT || 3002;
 const upload = multer();
 
+// 剖折 Cookie
+app.use(cookieParser());
+
 // 頂層中介軟體 開始
 // cors設定，參數為必要，注意不要只寫`app.use(cors())`
 app.use(
@@ -54,10 +57,7 @@ app.use("/board-game", boardGame);
 app.use("/larp", larp);
 
 // 登入路由
-app.use("/backend/user-profile", loginRouter);
-
-// 剖折 Cookie
-app.use(cookieParser());
+app.use("/user-profile", loginRouter);
 
 // 綠界金流 test
 app.use("/ecpay", Ecpay);
@@ -72,4 +72,9 @@ app.use(express.static("public"));
 
 app.listen(port, () => {
   console.log(`server啟動: ${port}`);
+});
+
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ status: "error", message: "Internal server error" });
 });
