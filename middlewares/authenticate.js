@@ -4,33 +4,37 @@ import "dotenv/config.js";
 const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
 export default function authenticate(req, res, next) {
-  // 從 cookies 或 Authorization header 中取得 token
-  const authHeader = req.headers.authorization;
-  const token =
-    req.cookies?.accessToken || (authHeader && authHeader.split(" ")[1]);
+  console.log("--- Authenticate Middleware Start ---");
+  console.log("Cookies:", req.cookies);
 
-  // 檢查是否有 token
+  const token = req.cookies?.accessToken;
+
   if (!token) {
+    console.log("No token found in cookies");
     return res.status(401).json({
       status: "error",
       message: "授權失敗，沒有存取令牌",
     });
   }
 
-  // 驗證 token 的合法性
-  jsonwebtoken.verify(token, accessTokenSecret, (err, user) => {
-    if (err) {
-      // 判斷具體的錯誤類型
-      const message =
-        err.name === "TokenExpiredError" ? "Token已過期" : "不合法的存取令牌";
-      return res.status(403).json({
+  try {
+    const decoded = jsonwebtoken.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    console.log("Token decoded successfully:", decoded);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    console.error("Token verification error:", err.name, err.message);
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({
         status: "error",
-        message,
+        message: "Token已過期",
       });
     }
-
-    // 成功驗證後，將解碼的 user 資料附加到 req 物件中
-    req.user = user;
-    next();
-  });
+    return res.status(403).json({
+      status: "error",
+      message: "不合法的存取令牌",
+    });
+  } finally {
+    console.log("--- Authenticate Middleware End ---");
+  }
 }
