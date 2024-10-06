@@ -23,3 +23,6 @@ SELECT * FROM recipient_info WHERE user_id = 2024001;
 
 -- 測試
 SELECT * FROM prod_list WHERE prod_sales > 600;
+
+-- 測試
+SELECT * FROM prod_ord_list pl LEFT JOIN prod_ord_item pi ON pl.ord_id = pi.ord_id;
