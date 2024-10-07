@@ -27,9 +27,11 @@ router.get("/check-page", async (req, res) => {
   res.json({ escape: rows, location: locs });
 });
 
+// 回傳訂單資料
 router.post("/ord-api", async (req, res) => {
   const data = req.body;
   console.log("接收到的資料:", data);
+  // 改變資料格式
   const loc = parseInt(data.loc);
   const people = parseInt(data.people);
 
@@ -59,6 +61,28 @@ router.post("/ord-api", async (req, res) => {
   }
 });
 
+// 處理被預約的時間
+router.get("/orded-time", async (req, res) => {
+  const { larpName, loc, date, datetime } = req.query;
+
+  try {
+    // 查詢當前條件下，已經被預約的時段
+    const [orded] = await db.query(
+      `SELECT ord_time FROM larp_ord_list WHERE ord_theme = ? AND ord_loc = ? AND ord_date = ?`,
+      [larpName, loc, date]
+    );
+
+    // 提取已預約的時段
+    const ordedTime = orded.map((ord) => ord.ord_time);
+
+    // 把已被預約的時段傳給前端
+    res.status(200).json({ ordedTime });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "伺服器錯誤，請稍後再試。" });
+  }
+});
+
 router.get("/:larpid", async (req, res) => {
   const { larpid } = req.params;
   const sql = "SELECT * FROM larp_list WHERE larp_type=1 AND id=?";
@@ -73,6 +97,7 @@ router.get("/:larpid", async (req, res) => {
   JOIN tag_list tl ON tl.tag_id=lt.tag_id
   WHERE ll.larp_type = 1
   `;
+
   const [rows] = await db.query(sql2);
   res.json({ single: row, all: rows });
 });
