@@ -26,3 +26,10 @@ SELECT * FROM prod_list WHERE prod_sales > 600;
 
 -- 測試
 SELECT * FROM prod_ord_list pl LEFT JOIN prod_ord_item pi ON pl.ord_id = pi.ord_id;
+
+
+-- 測試
+INSERT INTO `prod_ord_item`( `ord_id`, `id`, `item_price`, `item_qty`, `item_total`) VALUES ('2','255','2200','1','2200')
+
+-- 測試
+INSERT INTO `prod_ord_list`( `user_id`, `ord_total`, `ord_pay`, `ord_recipient_name`, `ord_contact_number`, `ord_contact_address`) VALUES ('2024001','2200','1','陳家豪','0919338523','臺中市豐原區三村路27號')
