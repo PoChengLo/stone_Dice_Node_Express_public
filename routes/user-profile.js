@@ -6,6 +6,57 @@ import authenticate from "../middlewares/authenticate.js";
 
 const router = express.Router();
 
+// 新增註冊路由
+router.post("/signup", async (req, res) => {
+  console.log("--- Signup Route Start ---");
+  try {
+    const { email, user_name, password } = req.body;
+
+    if (!email || !user_name || !password) {
+      console.log("Missing required fields");
+      return res.status(400).json({ status: "fail", message: "缺少必要欄位" });
+    }
+
+    // 檢查 email 是否已存在
+    const [existingUsers] = await db.query(
+      "SELECT * FROM user_info WHERE email = ?",
+      [email]
+    );
+
+    if (existingUsers.length > 0) {
+      console.log("Email already registered:", email);
+      return res
+        .status(400)
+        .json({ status: "fail", message: "該 email 已被註冊" });
+    }
+
+    // 生成加鹽的密碼哈希
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // 插入新用戶
+    const [result] = await db.query(
+      "INSERT INTO user_info (user_name, email, password, create_day) VALUES (?, ?, ?, ?)",
+      [user_name, email, hashedPassword, new Date()]
+    );
+
+    if (result.affectedRows === 1) {
+      console.log("User registered successfully:", email);
+      res.status(201).json({ status: "success", message: "註冊成功" });
+    } else {
+      console.log("User registration failed");
+      res
+        .status(500)
+        .json({ status: "error", message: "註冊失敗，請稍後再試" });
+    }
+  } catch (error) {
+    console.error("註冊錯誤:", error);
+    res.status(500).json({ status: "error", message: "發生錯誤，請稍後再試" });
+  } finally {
+    console.log("--- Signup Route End ---");
+  }
+});
+
 // 檢查登入狀態用
 router.get("/check", authenticate, async (req, res) => {
   console.log("--- /user-profile/check Route Start ---");
