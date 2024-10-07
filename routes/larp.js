@@ -27,6 +27,38 @@ router.get("/check-page", async (req, res) => {
   res.json({ escape: rows, location: locs });
 });
 
+router.post("/ord-api", async (req, res) => {
+  const data = req.body;
+  console.log("接收到的資料:", data);
+  const loc = parseInt(data.loc);
+  const people = parseInt(data.people);
+
+  try {
+    const [row, fields] = await db.query(
+      `INSERT INTO larp_ord_list (ord_theme, ord_loc, ord_people, ord_date, ord_time, ord_name, ord_mobile, ord_email, ord_total, place_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        data.larpName,
+        loc,
+        people,
+        data.date,
+        data.datetime,
+        data.name,
+        data.mobile,
+        data.email,
+        data.totalprice,
+        data.ordTime,
+      ]
+    );
+
+    res.json({ success: true, message: "後端資料儲存成功!" });
+  } catch (error) {
+    console.error("資料儲存失敗:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "後端資料儲存失敗", error });
+  }
+});
+
 router.get("/:larpid", async (req, res) => {
   const { larpid } = req.params;
   const sql = "SELECT * FROM larp_list WHERE larp_type=1 AND id=?";
