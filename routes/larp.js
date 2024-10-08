@@ -27,7 +27,7 @@ router.get("/check-page", async (req, res) => {
   res.json({ escape: rows, location: locs });
 });
 
-// 回傳訂單資料
+// 回傳訂單資料(由後端對比資料庫判斷，如果繞過前端驗證也會在這邊被擋下來)
 router.post("/ord-api", async (req, res) => {
   const data = req.body;
   // 改變資料格式
@@ -84,6 +84,28 @@ router.post("/ord-api", async (req, res) => {
   }
 });
 
+// 把被預約的時間傳給前端，讓前端可以動態調整選項選取
+// router.get("/orded-time", async (req, res) => {
+//   const { larpName, loc, date, datetime } = req.body;
+
+//   try {
+//     // 查詢當前條件下，已經被預約的時段
+//     const [orded] = await db.query(
+//       `SELECT ord_time FROM larp_ord_list WHERE ord_theme = ? AND ord_loc = ? AND ord_date = ?`,
+//       [larpName, loc, date]
+//     );
+
+//     // 提取已預約的時段
+//     const ordedTime = orded.map((ord) => ord.ord_time);
+
+//     // 把已被預約的時段傳給前端
+//     res.status(200).json({ ordedTime });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: "伺服器錯誤，請稍後再試。" });
+//   }
+// });
+
 // 可查看訂單回丟得到的json檔，寫完後要砍掉這隻
 router.get("/ord-api", async (req, res) => {
   try {
@@ -94,29 +116,6 @@ router.get("/ord-api", async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "後端資料獲取失敗", error });
-  }
-});
-
-// 處理被預約的時間
-router.get("/orded-time", async (req, res) => {
-  const { larpName, loc, date, datetime } = req.body;
-  console.log("查詢條件:", { larpName, loc, date, datetime });
-
-  try {
-    // 查詢當前條件下，已經被預約的時段
-    const [orded] = await db.query(
-      `SELECT ord_time FROM larp_ord_list WHERE ord_theme = ? AND ord_loc = ? AND ord_date = ?`,
-      [larpName, loc, date]
-    );
-
-    // 提取已預約的時段
-    const ordedTime = orded.map((ord) => ord.ord_time);
-
-    // 把已被預約的時段傳給前端
-    res.status(200).json({ ordedTime });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "伺服器錯誤，請稍後再試。" });
   }
 });
 
@@ -134,9 +133,13 @@ router.get("/:larpid", async (req, res) => {
   JOIN tag_list tl ON tl.tag_id=lt.tag_id
   WHERE ll.larp_type = 1
   `;
-
   const [rows] = await db.query(sql2);
-  res.json({ single: row, all: rows });
+
+  // 把被預約的時間傳給前端，讓前端可以動態調整選項選取
+  const sql3 = `SELECT ord_theme, ord_loc, ord_date, ord_time FROM larp_ord_list `;
+  const [ord] = await db.query(sql3);
+  console.log(ord);
+  res.json({ single: row, all: rows, order: ord });
 });
 
 export default router;
