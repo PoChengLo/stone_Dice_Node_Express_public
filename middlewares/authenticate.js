@@ -7,10 +7,17 @@ export default function authenticate(req, res, next) {
   console.log("--- Authenticate Middleware Start ---");
   console.log("Cookies:", req.cookies);
 
-  const token = req.cookies?.accessToken;
+  // 優先從 cookies 獲取 token
+  let token = req.cookies?.accessToken;
+
+  // 如果 cookies 中沒有找到 token，則嘗試從 Authorization header 獲取
+  if (!token && req.headers.authorization) {
+    const authHeader = req.headers.authorization;
+    token = authHeader.split(" ")[1]; // "Bearer <token>" 格式，提取 token
+  }
 
   if (!token) {
-    console.log("No token found in cookies");
+    console.log("No token found in cookies or Authorization header");
     return res.status(401).json({
       status: "error",
       message: "授權失敗，沒有存取令牌",
@@ -18,7 +25,7 @@ export default function authenticate(req, res, next) {
   }
 
   try {
-    const decoded = jsonwebtoken.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const decoded = jsonwebtoken.verify(token, accessTokenSecret);
     console.log("Token decoded successfully:", decoded);
     req.user = decoded;
     next();
