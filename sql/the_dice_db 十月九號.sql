@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2024-10-08 11:05:49
+-- 產生時間： 2024-10-09 08:19:17
 -- 伺服器版本： 8.4.0
 -- PHP 版本： 8.1.25
 
@@ -1004,8 +1004,8 @@ CREATE TABLE `user_info` (
 --
 
 INSERT INTO `user_info` (`user_id`, `user_name`, `email`, `password`, `real_name`, `nick_name`, `user_img`, `birthday`, `create_day`, `last_date`, `qr_img`, `mobile`, `line_uid`, `google_uid`, `total_spending`, `gender`, `is_subscribed_personal`, `is_subscribed_general`) VALUES
-(2024001, 'abigail6999', 'abigail6999@hotmail.com', '$2b$12$K14BkVJBCxu9czp0r5c97O1shwKhyabSmWGS4.h4PFRTvfsMfKVCu', '陳家豪', '黑色劍士凱茲', 'http://ssl.gstatic.com/accounts/ui/avatar_2x.png', '1970-09-01', '2024-07-21', '2024-07-25', '', '0919338523', 'abigail6999', NULL, 0, NULL, 0, 0),
-(2024002, 'michelle9875', 'michelle9875@gmail.com', '$2b$12$K14BkVJBCxu9czp0r5c97O1shwKhyabSmWGS4.h4PFRTvfsMfKVCu', '許書豪', '古力菲斯', 'http://ssl.gstatic.com/accounts/ui/avatar_2x.png', '1986-10-28', '2024-07-10', '2024-09-10', '', '0913687185', 'michelle9875', NULL, 0, NULL, 0, 0),
+(2024001, 'abigail6999', 'abigail6999@hotmail.com', '$2b$12$K14BkVJBCxu9czp0r5c97O1shwKhyabSmWGS4.h4PFRTvfsMfKVCu', '陳家豪', '新世紀福德正神', 'http://ssl.gstatic.com/accounts/ui/avatar_2x.png', '1970-09-01', '2024-07-21', '2024-07-25', '', '0919338523', 'abigail6999', NULL, 1500, 'nonbinary', 1, 0),
+(2024002, 'michelle9875', 'michelle9875@gmail.com', '$2b$12$K14BkVJBCxu9czp0r5c97O1shwKhyabSmWGS4.h4PFRTvfsMfKVCu', '許書豪', '古力菲斯', 'http://ssl.gstatic.com/accounts/ui/avatar_2x.png', '1986-10-28', '2024-07-10', '2024-09-10', '', '0913687185', 'michelle9875', NULL, 0, NULL, 1, 0),
 (2024003, 'gonzales_6011', 'gonzales_6011@gmail.com', '$2b$12$K14BkVJBCxu9czp0r5c97O1shwKhyabSmWGS4.h4PFRTvfsMfKVCu', '劉木森', '派克', 'http://ssl.gstatic.com/accounts/ui/avatar_2x.png', '1974-12-22', '2024-06-29', '2024-09-10', '', '0968696277', 'gonzales6011', NULL, 0, NULL, 0, 0),
 (2024004, 'charles6175_eva', 'charles6175_eva@yahoo.com.tw', '$2b$12$K14BkVJBCxu9czp0r5c97O1shwKhyabSmWGS4.h4PFRTvfsMfKVCu', '洪昌瀚', '喀絲卡', 'http://ssl.gstatic.com/accounts/ui/avatar_2x.png', '1987-01-16', '2024-07-22', '2024-08-05', '', '0930440497', 'charles6175', NULL, 0, NULL, 0, 0),
 (2024005, 'h1-hart8409', 'h1-hart8409@gmail.com', '$2b$12$K14BkVJBCxu9czp0r5c97O1shwKhyabSmWGS4.h4PFRTvfsMfKVCu', '蔡婉宜', '法露', 'http://ssl.gstatic.com/accounts/ui/avatar_2x.png', '2001-10-23', '2024-06-05', '2024-08-12', '', '0970927555', 'hart8409', NULL, 0, NULL, 0, 0),
