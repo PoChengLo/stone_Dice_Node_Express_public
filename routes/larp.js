@@ -57,7 +57,7 @@ router.post("/ord-api", async (req, res) => {
     if (isBooked === false) {
       const [row, fields] = await db.query(
         `INSERT INTO larp_ord_list 
-      (ord_theme, ord_loc, ord_people, ord_date, ord_time, ord_name, ord_mobile, ord_email, ord_total, place_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (ord_theme, ord_loc, ord_people, ord_date, ord_time, ord_name, ord_mobile, ord_email, ord_total, place_time,user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
         [
           data.larpName,
           loc,
@@ -69,6 +69,7 @@ router.post("/ord-api", async (req, res) => {
           data.email,
           data.totalprice,
           data.ordTime,
+          data.userid,
         ]
       );
 
