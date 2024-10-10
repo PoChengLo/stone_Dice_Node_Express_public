@@ -101,7 +101,7 @@ router.get("/", async (req, res) => {
 // 桌遊使用者資料頁面
 router.get("/user-info", async (req, res) => {
   const user_id = Number(req.query.user_id);
-  const sql = `SELECT user_id, user_name, mobile FROM user_info WHERE user_id = ${user_id}`;
+  const sql = `SELECT user_id, user_name, mobile, real_name FROM user_info WHERE user_id = ${user_id}`;
   try {
     const [user] = await db.query(sql, [user_id]);
     res.json({ status: "success", data: { user } });
@@ -113,12 +113,84 @@ router.get("/user-info", async (req, res) => {
 router.get("/pay-ship", async (req, res) => {
   const user_id = Number(req.query.user_id);
   const sql = `SELECT * FROM recipient_info WHERE user_id = ${user_id}`;
+
   try {
     const [recipient] = await db.query(sql, [user_id]);
     res.json({ status: "success", data: { recipient } });
   } catch (error) {
     res.status(500).json({ error: "Database query error" });
   }
+});
+
+router.post("/pay-ship", async (req, res) => {
+  let new_ord, new_ord_list_id, new_ord_item;
+  const orderData = req.body;
+  const user_id = Number(req.query.user_id);
+  // 購物車資料
+  const cart_data = orderData.items;
+  // 收件人資料
+  const recipient_data = orderData.selectRecipient;
+  // 訂單總額
+  const final_total = orderData.finalTotal;
+
+  // 新增訂單
+  try {
+    const new_ord_sql = `INSERT INTO prod_ord_list (user_id, ord_total, ord_pay, ord_recipient_name, ord_contact_number, ord_contact_address) VALUES (?, ?, ?, ?, ?, ?)`;
+    const [newOrd, new_ord_data] = await db.query(new_ord_sql, [
+      `${user_id}`,
+      `${final_total}`,
+      0,
+      `${recipient_data.recipient}`,
+      `${recipient_data.contact_number}`,
+      `${recipient_data.address}`,
+    ]);
+    new_ord = newOrd;
+    console.log("新增訂單");
+  } catch (e) {
+    console.log("無法新增訂單");
+  }
+
+  // 新增訂單項目
+  try {
+    new_ord_list_id = new_ord.insertId;
+    const new_cart_item_sql = `INSERT INTO prod_ord_item (ord_id, id, prod_name, item_price, item_qty, item_total ) VALUES(?, ?, ?, ?, ?, ?)`;
+    const new_ord_item_sql = `SELECT * FROM prod_ord_item WHERE ord_id = ${new_ord_list_id}`;
+    for (const cart_item of cart_data) {
+      await db.query(new_cart_item_sql, [
+        `${new_ord_list_id}`,
+        cart_item.id,
+        cart_item.prod_name,
+        cart_item.price,
+        cart_item.quantity,
+        cart_item.subtotal,
+      ]);
+    }
+    console.log("新增訂單項目");
+    [new_ord_item] = await db.query(new_ord_item_sql);
+  } catch (e) {
+    console.log("無法新增訂單項目");
+  }
+
+  // 如果有新增訂單，返回成功儲存訂單
+  if (new_ord && new_ord_item) {
+    res.json({
+      success: true,
+      message: "訂單儲存成功！！！",
+      new_ord,
+      new_ord_list_id,
+      new_ord_item,
+      orderData,
+    });
+  } else {
+    res.json({ success: false, message: "請檢查會員id" });
+  }
+});
+
+router.get("/success", async (req, res) => {
+  const user_id = Number(router.query.user_id);
+  const new_ord_list_id = ``;
+  const new_ord_sql = `SELECT * FROM prod_ord_list WHERE user_id = ${user_id} ORDER BY ord_date`;
+  const new_ord_item_sql = `SELECT * FROM `;
 });
 
 // 商品單獨頁路由
