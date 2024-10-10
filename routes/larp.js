@@ -42,9 +42,6 @@ router.post("/ord-api", async (req, res) => {
 
     // 檢查目前的選項是否已經被預約
     const isBooked = booking.some((v) => {
-      // console.log(
-      //   `Comparing: ${v.ord_theme.toString()} === ${data.larpName}, ${v.ord_loc.toString()} === ${data.loc}, ${v.ord_date} === ${data.date}, ${v.ord_time} === ${data.datetime}`
-      // );
       return (
         v.ord_theme.toString() === data.larpName && // 先比對 larpName
         v.ord_loc.toString() === data.loc && // 如果 larpName 相同，接著比對 loc
@@ -55,9 +52,9 @@ router.post("/ord-api", async (req, res) => {
     console.log("Is Booked:", isBooked);
 
     if (isBooked === false) {
-      const [row, fields] = await db.query(
+      const [result] = await db.query(
         `INSERT INTO larp_ord_list 
-      (ord_theme, ord_loc, ord_people, ord_date, ord_time, ord_name, ord_mobile, ord_email, ord_total, place_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (ord_theme, ord_loc, ord_people, ord_date, ord_time, ord_name, ord_mobile, ord_email, ord_total, place_time,user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.larpName,
           loc,
@@ -69,10 +66,24 @@ router.post("/ord-api", async (req, res) => {
           data.email,
           data.totalprice,
           data.ordTime,
+          data.userid,
         ]
       );
+      const ord_id = result.insertId;
+      console.log("新生成的ord_id:", ord_id);
 
-      res.json({ success: true, message: "後端資料儲存成功!" });
+      if (ord_id) {
+        res.json({
+          success: true,
+          message: "後端資料儲存成功!",
+          ord_id: ord_id,
+        });
+      } else {
+        console.error("ord_id 為 undefined，可能插入失敗。");
+        res
+          .status(500)
+          .json({ success: false, message: "ord_id 為 undefined。" });
+      }
     } else {
       res.status(500).json({ success: false, message: "此時段已被預約!" });
     }
@@ -84,38 +95,22 @@ router.post("/ord-api", async (req, res) => {
   }
 });
 
-// 把被預約的時間傳給前端，讓前端可以動態調整選項選取
-// router.get("/orded-time", async (req, res) => {
-//   const { larpName, loc, date, datetime } = req.body;
+router.get("/check-success/:ord_id", async (req, res) => {
+  const { ord_id } = req.params;
 
-//   try {
-//     // 查詢當前條件下，已經被預約的時段
-//     const [orded] = await db.query(
-//       `SELECT ord_time FROM larp_ord_list WHERE ord_theme = ? AND ord_loc = ? AND ord_date = ?`,
-//       [larpName, loc, date]
-//     );
-
-//     // 提取已預約的時段
-//     const ordedTime = orded.map((ord) => ord.ord_time);
-
-//     // 把已被預約的時段傳給前端
-//     res.status(200).json({ ordedTime });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: "伺服器錯誤，請稍後再試。" });
-//   }
-// });
-
-// 可查看訂單回丟得到的json檔，寫完後要砍掉這隻
-router.get("/ord-api", async (req, res) => {
   try {
-    const [rows, fields] = await db.query(`SELECT * FROM larp_ord_list`);
-    res.json(rows); // Return the fetched data as JSON
+    const sql = "SELECT * FROM larp_ord_list WHERE ord_id = ?";
+    const [rows] = await db.query(sql, [ord_id]);
+
+    // 確保找到了訂單
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json(rows[0]); // 返回找到的第一個訂單資料
   } catch (error) {
-    console.error("資料獲取失敗:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "後端資料獲取失敗", error });
+    console.error("Database query error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
