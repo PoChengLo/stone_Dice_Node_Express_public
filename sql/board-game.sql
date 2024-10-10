@@ -35,5 +35,7 @@ INSERT INTO `prod_ord_item`( `ord_id`, `id`, `prod_name` , `item_price`, `item_q
 INSERT INTO `prod_ord_list`( `user_id`, `ord_total`, `ord_pay`, `ord_recipient_name`, `ord_contact_number`, `ord_contact_address`) VALUES ('2024001','2200','1','陳家豪','0919338523','臺中市豐原區三村路27號')
 
 
+
 -- 選取會員的最新資料
 SELECT * FROM prod_ord_list WHERE user_id = 2024001 ORDER BY ord_date DESC LIMIT 1;
+

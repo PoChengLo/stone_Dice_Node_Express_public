@@ -3,6 +3,7 @@ import jsonwebtoken from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import db from "../configs/mysql.js";
 import authenticate from "../middlewares/authenticate.js";
+import { upload } from "./users.js";
 
 const router = express.Router();
 
@@ -176,6 +177,120 @@ router.get("/:id/home", async (req, res) => {
     res.status(500).json({ status: "error", message: "Database error" });
   }
 });
+
+//更新使用者資料
+router.put("/:id/home", authenticate, async function (req, res) {
+  const id = req.params.id;
+
+  // 檢查是否為授權會員，只有授權會員可以存取自己的資料
+  if (req.user.id !== parseInt(id)) {
+    return res
+      .status(403)
+      .json({ status: "error", message: "無權限存取此會員資料" });
+  }
+
+  // 從前端接收需要更新的資料
+  const {
+    nick_name,
+    birthday,
+    mobile,
+    gender,
+    is_subscribed_personal,
+    is_subscribed_general,
+  } = req.body;
+
+  try {
+    // 查詢資料庫中的現有使用者資料
+    const [existingUser] = await db.query(
+      "SELECT * FROM user_info WHERE user_id = ?",
+      [id]
+    );
+
+    if (!existingUser.length) {
+      return res.status(404).json({ status: "error", message: "使用者不存在" });
+    }
+
+    // 准備要更新的資料
+    const updatedUserData = {
+      nick_name,
+      birthday,
+      mobile,
+      gender,
+      is_subscribed_personal: is_subscribed_personal || false,
+      is_subscribed_general: is_subscribed_general || false,
+    };
+
+    // 更新資料庫中的資料
+    const [affectedRows] = await db.query(
+      "UPDATE user_info SET ? WHERE user_id = ?",
+      [updatedUserData, id]
+    );
+
+    if (affectedRows === 0) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "更新失敗，無資料被更新" });
+    }
+
+    // 獲取更新後的使用者資料
+    const [updatedUser] = await db.query(
+      "SELECT * FROM user_info WHERE user_id = ?",
+      [id]
+    );
+
+    // 返回更新後的使用者資料
+    return res.json({ status: "success", data: { user: updatedUser[0] } });
+  } catch (error) {
+    console.error("資料庫更新錯誤:", error);
+    return res
+      .status(500)
+      .json({ status: "error", message: "伺服器錯誤，請稍後再試" });
+  }
+});
+
+//大頭貼功能
+router.post(
+  "/upload-avatar",
+  authenticate,
+  upload.single("avatar"), // 上傳來的檔案(這是單個檔案，表單欄位名稱為avatar)
+  async function (req, res) {
+    // req.file 即上傳來的檔案(avatar這個檔案)
+    // req.body 其它的文字欄位資料
+    const id = req.user.id; // 使用者 ID 來自驗證的 req.user.id
+
+    if (req.file) {
+      const data = { user_img: req.file.filename };
+
+      try {
+        const [affectedRows] = await db.query(
+          "UPDATE user_info SET user_img = ? WHERE user_id = ?",
+          [req.file.filename, id]
+        );
+
+        // 檢查是否有資料被更新
+        if (affectedRows === 0) {
+          return res.json({
+            status: "error",
+            message: "更新失敗或沒有資料被更新",
+          });
+        }
+
+        // 成功回傳圖片檔名
+        return res.json({
+          status: "success",
+          data: { user_img: req.file.filename },
+        });
+      } catch (error) {
+        console.error("資料庫更新錯誤:", error);
+        return res
+          .status(500)
+          .json({ status: "error", message: "伺服器錯誤，請稍後再試" });
+      }
+    } else {
+      return res.json({ status: "fail", message: "未上傳檔案" });
+    }
+  }
+);
 
 // 登出
 router.post("/logout", authenticate, (req, res) => {

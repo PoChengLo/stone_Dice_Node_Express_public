@@ -187,6 +187,7 @@ router.post("/pay-ship", async (req, res) => {
 });
 
 router.get("/success", async (req, res) => {
+
   let new_ord, new_ord_list_id, new_ord_item, ord_update;
   const user_id = Number(req.query.user_id);
   const new_ord_sql = `SELECT * FROM prod_ord_list WHERE user_id = ${user_id} ORDER BY ord_date DESC LIMIT 1`;
@@ -220,6 +221,7 @@ router.get("/success", async (req, res) => {
     new_ord_item,
     ord_update,
   });
+
 });
 
 // 商品單獨頁路由
