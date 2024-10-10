@@ -168,6 +168,7 @@ import * as crypto from "crypto";
 // });
 router.get("/board-game", function (req, res, next) {
   const amount = req.query.amount;
+  const user_id = req.query.user_id;
   //綠界全方位金流技術文件：
   // https://developers.ecpay.com.tw/?p=2856
   // 信用卡測試卡號：4311-9522-2222-2222 安全碼 222
@@ -184,7 +185,7 @@ router.get("/board-game", function (req, res, next) {
   const TradeDesc = "商店線上付款";
   const ItemName = "石之骰桌遊商品";
   const ReturnURL = "https://www.ecpay.com.tw";
-  const OrderResultURL = "http://localhost:3000/board-game/success"; //前端成功頁面
+  const OrderResultURL = `http://localhost:3000/board-game/success?user_id=${user_id}`; //前端成功頁面
   const ChoosePayment = "ALL";
 
   ////////////////////////以下參數不用改////////////////////////

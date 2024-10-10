@@ -187,10 +187,41 @@ router.post("/pay-ship", async (req, res) => {
 });
 
 router.get("/success", async (req, res) => {
-  const user_id = Number(router.query.user_id);
-  const new_ord_list_id = ``;
-  const new_ord_sql = `SELECT * FROM prod_ord_list WHERE user_id = ${user_id} ORDER BY ord_date`;
-  const new_ord_item_sql = `SELECT * FROM `;
+
+  let new_ord, new_ord_list_id, new_ord_item, ord_update;
+  const user_id = Number(req.query.user_id);
+  const new_ord_sql = `SELECT * FROM prod_ord_list WHERE user_id = ${user_id} ORDER BY ord_date DESC LIMIT 1`;
+  try {
+    const [newOrd] = await db.query(new_ord_sql, [user_id]);
+    new_ord = newOrd;
+  } catch (e) {
+    console.log(e);
+  }
+  new_ord_list_id = new_ord[0].ord_id;
+  const new_ord_item_sql = `SELECT * FROM prod_ord_item WHERE ord_id = ${new_ord_list_id}`;
+
+  try {
+    const [newOrdItem] = await db.query(new_ord_item_sql, [new_ord_list_id]);
+    new_ord_item = newOrdItem;
+  } catch (e) {
+    console.log(e);
+  }
+
+  const ord_update_sql = `UPDATE prod_ord_list SET ord_pay = 1 WHERE ord_id = ${new_ord_list_id}`;
+  try {
+    const [ordUpdate] = await db.query(ord_update_sql, [new_ord_list_id]);
+    ord_update = ordUpdate;
+  } catch (e) {
+    console.log(e);
+  }
+
+  res.json({
+    success: true,
+    new_ord,
+    new_ord_item,
+    ord_update,
+  });
+
 });
 
 // 商品單獨頁路由
