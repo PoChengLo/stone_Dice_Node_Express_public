@@ -43,7 +43,7 @@ router.post("/signup", async (req, res) => {
         .json({ status: "fail", message: "該 email 已被註冊" });
     }
 
-    // 生成加鹽的密碼哈希
+    // 生成密碼哈希
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
