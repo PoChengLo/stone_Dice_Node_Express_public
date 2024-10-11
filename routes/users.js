@@ -21,8 +21,48 @@ const storage = multer.diskStorage({
 // 設置 upload 中間件
 const upload = multer({ storage: storage });
 
-// 將 upload 中間件導出，供其他檔案使用
-export { upload };
+// POST - 上傳使用者頭像並更新資料庫
+router.post(
+  "/upload-avatar",
+  authenticate,
+  upload.single("file"), // 使用 multer 中間件處理單個檔案上傳
+  async function (req, res) {
+    // 確保檔案成功上傳
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "上傳失敗，沒有檔案" });
+    }
+
+    const userId = req.user.id; // 授權後取得使用者 ID
+    const fileUrl = `http://localhost:3006/avatar/${req.file.filename}`; // 生成圖片 URL
+
+    try {
+      // 更新資料庫中的 user_info 表，保存圖片 URL
+      const [result] = await db.query(
+        "UPDATE user_info SET user_img = ? WHERE user_id = ?",
+        [fileUrl, userId]
+      );
+
+      if (result.affectedRows === 0) {
+        return res
+          .status(400)
+          .json({ status: "error", message: "更新失敗，使用者不存在" });
+      }
+
+      return res.json({
+        status: "success",
+        message: "頭像上傳並更新成功",
+        data: { fileUrl },
+      });
+    } catch (error) {
+      console.error("更新頭像失敗:", error);
+      return res
+        .status(500)
+        .json({ status: "error", message: "伺服器錯誤，請稍後再試" });
+    }
+  }
+);
 
 // GET - 取得所有會員資料
 router.get("/", async function (req, res) {
@@ -42,7 +82,6 @@ router.get("/", async function (req, res) {
 
 // GET - 取得單筆會員資料
 router.get("/:id", authenticate, async function (req, res) {
-  // 轉為數字
   const id = getIdParam(req);
 
   // 檢查是否為授權會員，只有授權會員可以存取自己的資料
@@ -51,9 +90,9 @@ router.get("/:id", authenticate, async function (req, res) {
   }
 
   try {
-    const user = await User.findByPk(id, {
-      raw: true, // 只需要資料表中資料
-    });
+    const user = await db.query("SELECT * FROM user_info WHERE user_id = ?", [
+      id,
+    ]);
 
     if (!user) {
       return res.json({ status: "error", message: "使用者不存在" });

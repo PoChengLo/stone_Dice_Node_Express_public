@@ -71,6 +71,8 @@ app.get("/", (req, res) => {
   res.send(`<h1>您好</h1>`);
 });
 
+app.use("/avatar", express.static("public/avatar"));
+
 // 使用靜態網頁public，需要放在所有路由後面、404前面
 app.use(express.static("public"));
 

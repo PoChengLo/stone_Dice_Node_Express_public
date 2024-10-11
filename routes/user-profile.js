@@ -3,9 +3,21 @@ import jsonwebtoken from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import db from "../configs/mysql.js";
 import authenticate from "../middlewares/authenticate.js";
-import { upload } from "./users.js";
+import path from "path";
+import multer from "multer";
 
 const router = express.Router();
+
+// multer 設定 - 設置上傳目錄和檔案名稱
+const storage = multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, "public/avatar/");
+  },
+  filename: function (req, file, callback) {
+    const newFilename = req.user.id + path.extname(file.originalname); // 使用 user_id 作為檔案名稱
+    callback(null, newFilename);
+  },
+});
 
 // 新增註冊路由
 router.post("/signup", async (req, res) => {
@@ -90,7 +102,6 @@ router.get("/check", authenticate, async (req, res) => {
 
 // 偉大的登入
 router.post("/login", async (req, res) => {
-  console.log("--- Login Route Start ---");
   try {
     const { email, password } = req.body;
 
@@ -144,9 +155,6 @@ router.post("/login", async (req, res) => {
       secure: process.env.NODE_ENV === "production", // 在生產環境中使用 HTTPS
     });
 
-    console.log("Login successful for user:", email);
-    console.log("Token generated and set in cookie");
-
     // 傳送 access token 作為回應
     res.json({
       status: "success",
@@ -156,7 +164,6 @@ router.post("/login", async (req, res) => {
     console.error("伺服器錯誤:", error);
     res.status(500).json({ status: "error", message: "伺服器錯誤" });
   } finally {
-    console.log("--- Login Route End ---");
   }
 });
 
@@ -248,14 +255,15 @@ router.put("/:id/home", authenticate, async function (req, res) {
   }
 });
 
-//大頭貼功能
+// 設置 upload 中間件
+const upload = multer({ storage: storage });
+
+// 大頭貼上傳路由
 router.post(
   "/upload-avatar",
   authenticate,
-  upload.single("avatar"), // 上傳來的檔案(這是單個檔案，表單欄位名稱為avatar)
+  upload.single("avatar"), // 上傳單個檔案，欄位名稱為 "avatar"
   async function (req, res) {
-    // req.file 即上傳來的檔案(avatar這個檔案)
-    // req.body 其它的文字欄位資料
     const id = req.user.id; // 使用者 ID 來自驗證的 req.user.id
 
     if (req.file) {
@@ -267,7 +275,6 @@ router.post(
           [req.file.filename, id]
         );
 
-        // 檢查是否有資料被更新
         if (affectedRows === 0) {
           return res.json({
             status: "error",
