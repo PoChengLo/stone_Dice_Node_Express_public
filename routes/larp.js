@@ -49,7 +49,7 @@ router.post("/ord-api", async (req, res) => {
         v.ord_time === data.datetime // 如果 date 相同，最後比對 time
       );
     });
-    console.log("Is Booked:", isBooked);
+    // console.log("Is Booked:", isBooked);
 
     if (isBooked === false) {
       const [result] = await db.query(
@@ -70,7 +70,7 @@ router.post("/ord-api", async (req, res) => {
         ]
       );
       const ord_id = result.insertId;
-      console.log("新生成的ord_id:", ord_id);
+      // console.log("新生成的ord_id:", ord_id);
 
       if (ord_id) {
         res.json({
@@ -133,7 +133,7 @@ router.get("/:larpid", async (req, res) => {
   // 把被預約的時間傳給前端，讓前端可以動態調整選項選取
   const sql3 = `SELECT ord_theme, ord_loc, ord_date, ord_time FROM larp_ord_list `;
   const [ord] = await db.query(sql3);
-  console.log(ord);
+  // console.log(ord);
   res.json({ single: row, all: rows, order: ord });
 });
 
