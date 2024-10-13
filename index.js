@@ -1,6 +1,7 @@
 import express from "express";
 import boardGame from "./routes/board-game.js";
 import larp from "./routes/larp.js";
+import mysteryGame from "./routes/mystery-game.js";
 import multer from "multer";
 import db from "./configs/mysql.js";
 import cors from "cors";
@@ -56,6 +57,9 @@ app.use("/board-game", boardGame);
 
 // 密室逃脫路由
 app.use("/larp", larp);
+
+// 劇本殺路由
+app.use("/mystery-game", mysteryGame);
 
 // 登入路由
 app.use("/user-profile", loginRouter);
