@@ -5,6 +5,8 @@ import db from "../configs/mysql.js";
 import authenticate from "../middlewares/authenticate.js";
 import path from "path";
 import multer from "multer";
+import fs from "fs";
+import appRoot from "app-root-path";
 
 const router = express.Router();
 
@@ -74,7 +76,6 @@ router.post("/signup", async (req, res) => {
 router.get("/check", authenticate, async (req, res) => {
   console.log("--- /user-profile/check Route Start ---");
   try {
-    console.log("User ID from token:", req.user.id);
     const [user] = await db.query("SELECT * FROM user_info WHERE user_id = ?", [
       req.user.id,
     ]);
@@ -268,8 +269,26 @@ router.post(
 
     if (req.file) {
       const data = { user_img: req.file.filename };
+      const avatarDir = path.join(appRoot.path, "public/avatar");
 
       try {
+        // 先刪除用戶舊的圖片
+        const [user] = await db.query(
+          "SELECT user_img FROM user_info WHERE user_id = ?",
+          [id]
+        );
+        if (user && user.user_img) {
+          const oldImagePath = path.join(avatarDir, user.user_img);
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlink(oldImagePath, (err) => {
+              if (err) {
+                console.error("刪除舊圖片失敗:", err);
+              }
+            });
+          }
+        }
+
+        // 更新用戶資料庫中的圖片信息
         const [affectedRows] = await db.query(
           "UPDATE user_info SET user_img = ? WHERE user_id = ?",
           [req.file.filename, id]
@@ -298,6 +317,104 @@ router.post(
     }
   }
 );
+
+// 新增密碼驗證路由
+router.post("/:id/verify-password", authenticate, async (req, res) => {
+  const userId = req.params.id;
+  const { password } = req.body;
+
+  // 檢查是否為授權會員，只有授權會員可以驗證自己的密碼
+  if (req.user.id !== parseInt(userId)) {
+    return res
+      .status(403)
+      .json({ status: "error", message: "無權限驗證此會員密碼" });
+  }
+
+  try {
+    // 查詢資料庫中的使用者資料
+    const [user] = await db.query("SELECT * FROM user_info WHERE user_id = ?", [
+      userId,
+    ]);
+
+    if (!user.length) {
+      return res.status(404).json({ status: "error", message: "使用者不存在" });
+    }
+
+    // 驗證密碼
+    const isValid = await bcrypt.compare(password, user[0].password);
+
+    if (isValid) {
+      return res.json({ status: "success", message: "密碼驗證成功" });
+    } else {
+      return res.status(400).json({ status: "error", message: "密碼不正確" });
+    }
+  } catch (error) {
+    console.error("密碼驗證錯誤:", error);
+    return res
+      .status(500)
+      .json({ status: "error", message: "伺服器錯誤，請稍後再試" });
+  }
+});
+
+// 修改密碼路由
+router.put("/:id/password", authenticate, async function (req, res) {
+  const id = req.params.id;
+
+  // 檢查是否為授權會員，只有授權會員可以存取自己的資料
+  if (req.user.id !== parseInt(id)) {
+    return res
+      .status(403)
+      .json({ status: "error", message: "存取會員資料失敗" });
+  }
+
+  // userPassword為來自前端的會員資料(準備要修改的資料)
+  const { originPassword, newPassword } = req.body;
+
+  // 檢查從前端瀏覽器來的資料，哪些為必要(originPassword, newPassword)
+  if (!id || !originPassword || !newPassword) {
+    return res.status(400).json({ status: "error", message: "缺少必要資料" });
+  }
+
+  try {
+    // 查詢資料庫目前的資料
+    const [dbUser] = await db.query(
+      "SELECT * FROM user_info WHERE user_id = ?",
+      [id]
+    );
+
+    if (!dbUser.length) {
+      return res.status(404).json({ status: "error", message: "使用者不存在" });
+    }
+
+    // compareHash(登入時的密碼純字串, 資料庫中的密碼hash) 比較密碼正確性
+    const isValid = await bcrypt.compare(originPassword, dbUser[0].password);
+
+    // isValid=false 代表密碼錯誤
+    if (!isValid) {
+      return res.status(400).json({ status: "error", message: "密碼錯誤" });
+    }
+
+    // 對資料庫執行update
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const [affectedRows] = await db.query(
+      "UPDATE user_info SET password = ? WHERE user_id = ?",
+      [hashedPassword, id]
+    );
+
+    // 沒有更新到任何資料 -> 失敗
+    if (!affectedRows) {
+      return res.status(500).json({ status: "error", message: "更新失敗" });
+    }
+
+    // 成功
+    return res.json({ status: "success", message: "密碼更新成功" });
+  } catch (error) {
+    console.error("資料庫更新錯誤:", error);
+    return res
+      .status(500)
+      .json({ status: "error", message: "伺服器錯誤，請稍後再試" });
+  }
+});
 
 // 登出
 router.post("/logout", authenticate, (req, res) => {
