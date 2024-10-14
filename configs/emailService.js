@@ -23,14 +23,27 @@ export const sendOTPEmail = async (to, otp) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: to,
-    subject: "密碼重置 OTP",
-    text: `您的 OTP 驗證碼是: ${otp}。此驗證碼將在 30 分鐘後失效。`,
+    subject: "石之骰召喚：你的秘密通行符文已準備就緒！",
+    text: `您的 OTP 驗證碼是: ${otp}。此驗證碼將在 3 分鐘後失效。`,
     html: `
-      <h1>密碼重置</h1>
-      <p>您的 OTP 驗證碼是: <strong>${otp}</strong></p>
-      <p>此驗證碼將在 30 分鐘後失效。</p>
-      <p>如果您沒有請求重置密碼，請忽略此郵件。</p>
-    `,
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4e9d2; border: 2px solid #8b4513; border-radius: 10px;">
+      <h1 style="color: #8b4513; text-align: center;">石之骰的神秘召喚</h1>
+      <br>
+      <p style="font-size: 16px; color: #333;">諸國度的冒險者，是否遺忘了重要的通行符文？</p>
+      
+      <p style="font-size: 16px; color: #333;">在你踏上尋找失落寶藏的征途之際，古老的石之骰已經回應了你的召喚。它為你鑄造了一枚強大的符文，蘊含著穿越密室、解開謎題的神秘力量。</p>
+      
+      <p style="font-size: 16px; color: #333;">請謹記，這枚符文蘊含著強大而短暫的魔力。你必須在接下來的 30 分鐘內使用它，否則它將消散於風中。</p>
+      
+      <p style="font-size: 18px; text-align: center;">你的神秘符文是：</p>
+      
+      <p style="font-size: 28px; font-weight: bold; color: #D92626; text-align: center;">${otp}</p>
+      
+      <p style="font-size: 16px; color: #333;">如果你並未尋求這樣的力量，那麼或許是某個狡猾的模仿者試圖冒充你的身份。在這種情況下，請將這封卷軸丟入熊熊燃燒的爐火中。</p>
+      
+      <p style="font-size: 14px; color: #666; text-align: right; margin-top: 30px;">願諸神保佑你的冒險之旅，<br>秘法商人 絕冬城的澤維爾 敬上</p>
+    </div>
+  `,
   };
 
   try {
