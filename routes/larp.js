@@ -110,7 +110,18 @@ router.get("/check-success/:ord_id", async (req, res) => {
     res.json(rows[0]); // 返回找到的第一個訂單資料
   } catch (error) {
     console.error("Database query error:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "伺服器連線失敗" });
+  }
+});
+
+router.get("/userid/:userid", async (req, res) => {
+  try {
+    const { userid } = req.params;
+    const sql = `SELECT * FROM larp_ord_list WHERE user_id = ${userid}`;
+    const [row] = await db.query(sql);
+    res.status(200).json(row);
+  } catch (error) {
+    res.status(500).json({ message: "伺服器連線失敗" });
   }
 });
 
