@@ -224,16 +224,16 @@ router.get("/success", async (req, res) => {
 
 // 會員獲取所有訂單資料
 router.get("/all-order-list", async (req, res) => {
-  let all_ord_list;
-  // all_ord_item;
+  let all_ord_list, query_ord_item;
   const user_id = Number(req.query.user_id);
+  const ord_id = Number(req.query.ord_id);
   const all_ord_list_sql = `SELECT * FROM prod_ord_list WHERE user_id = ${user_id} ORDER BY ord_id DESC`;
-  // const all_ord_item_sql = `SELECT * FROM prod_ord_item WHERE user_id = ${user_id} ORDER BY ord_detail_id DESC`;
+  const query_ord_item_sql = `SELECT * FROM prod_ord_item WHERE ord_id = ${ord_id} `;
   try {
     const [allOrd] = await db.query(all_ord_list_sql, [user_id]);
     all_ord_list = allOrd;
-    // const [allOrdItem] = await db.query(all_ord_item_sql, [user_id]);
-    // all_ord_item = allOrdItem;
+    const [queryOrdItem] = await db.query(query_ord_item_sql, [ord_id]);
+    query_ord_item = queryOrdItem;
   } catch (e) {
     console.log(e);
   }
@@ -241,7 +241,7 @@ router.get("/all-order-list", async (req, res) => {
     success: true,
     data: {
       all_ord_list,
-      // all_ord_item,
+      query_ord_item,
     },
   });
 });
