@@ -1,21 +1,17 @@
 import express from "express";
+import { generateAndStoreToken, verifyToken } from "../configs/otp.js";
+import { sendOTPEmail } from "../configs/emailService.js";
 import db from "../configs/mysql.js";
 import bcrypt from "bcrypt";
-import transporter from "../configs/mail.js";
 import "dotenv/config.js";
 
 const router = express.Router();
-
-// 生成 OTP 的函數
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
 
 // 電子郵件文字訊息樣版
 const mailText = (otpToken) => `親愛的網站會員 您好，
 通知重設密碼所需要的驗証碼，
 請輸入以下的6位數字，重設密碼頁面的"電子郵件驗証碼"欄位中。
-請注意驗証碼將於寄送後30分鐘後到期，如有任何問題請洽網站客服人員:
+請注意驗証碼將於寄送後3分鐘後到期，如有任何問題請洽網站客服人員:
     
 ${otpToken}
     
@@ -32,46 +28,34 @@ router.post("/request-otp", async (req, res) => {
   }
 
   try {
-    // 檢查用戶是否存在
-    const [user] = await db.query("SELECT * FROM user_info WHERE email = ?", [
+    // 檢查使用者 email 是否存在
+    const [users] = await db.query("SELECT * FROM user_info WHERE email = ?", [
       email,
     ]);
 
-    if (user.length === 0) {
-      return res.status(404).json({ status: "error", message: "使用者不存在" });
+    if (users.length === 0) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "使用者帳號不存在" });
     }
 
-    // 生成 OTP
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 分鐘後過期
+    // 生成並儲存 OTP
+    const otp = await generateAndStoreToken(email);
 
-    // 將 OTP 存儲到數據庫
-    await db.query(
-      "INSERT INTO otp_tokens (email, token, created_at) VALUES (?, ?, ?)",
-      [email, otp, new Date()]
-    );
+    // 使用 sendOTPEmail 發送 OTP 郵件
+    const result = await sendOTPEmail(email, otp);
 
-    // 寄送 email
-    const mailOptions = {
-      from: `"support"<${process.env.SMTP_TO_EMAIL}>`,
-      to: email,
-      subject: "重設密碼要求的電子郵件驗証碼",
-      text: mailText(otp),
-    };
-
-    transporter.sendMail(mailOptions, (err, response) => {
-      if (err) {
-        console.error("發送電子郵件失敗:", err);
-        return res
-          .status(500)
-          .json({ status: "error", message: "發送電子郵件失敗" });
-      } else {
-        return res.json({
-          status: "success",
-          message: "OTP 已發送至您的電子郵件",
-        });
-      }
-    });
+    if (result.success) {
+      return res.json({
+        status: "success",
+        message: "OTP 已發送至您的電子郵件",
+      });
+    } else {
+      console.error("發送電子郵件失敗:", result.error);
+      return res
+        .status(500)
+        .json({ status: "error", message: "發送電子郵件失敗" });
+    }
   } catch (error) {
     console.error("請求 OTP 錯誤:", error);
     res
@@ -80,8 +64,30 @@ router.post("/request-otp", async (req, res) => {
   }
 });
 
-// 驗證 OTP 並重設密碼的路由
-router.post("/reset-password", async (req, res) => {
+router.post("/verify-otp", async (req, res) => {
+  const { email, token } = req.body;
+
+  if (!email || !token) {
+    return res.status(400).json({ status: "error", message: "缺少必要資料" });
+  }
+
+  try {
+    const isValid = await verifyToken(email, token);
+    if (isValid) {
+      res.json({ status: "success", message: "OTP 驗證成功" });
+    } else {
+      res.status(400).json({ status: "error", message: "OTP 無效或已過期" });
+    }
+  } catch (error) {
+    console.error("驗證 OTP 時出錯:", error);
+    res
+      .status(500)
+      .json({ status: "error", message: "伺服器錯誤，請稍後再試" });
+  }
+});
+
+// 重設密碼的路由
+router.put("/reset-password", async (req, res) => {
   const { email, token, newPassword } = req.body;
 
   if (!email || !token || !newPassword) {
@@ -89,13 +95,10 @@ router.post("/reset-password", async (req, res) => {
   }
 
   try {
-    // 檢查 OTP 是否有效
-    const [otp] = await db.query(
-      "SELECT * FROM otp_tokens WHERE email = ? AND token = ? AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)",
-      [email, token]
-    );
+    // 驗證 OTP
+    const isValid = await verifyToken(email, token);
 
-    if (otp.length === 0) {
+    if (!isValid) {
       return res
         .status(400)
         .json({ status: "error", message: "OTP 無效或已過期" });

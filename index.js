@@ -9,6 +9,7 @@ import loginRouter from "./routes/user-profile.js";
 import Ecpay from "./routes/ecpay-test-only.js";
 import cookieParser from "cookie-parser";
 import shipment711 from "./routes/shipment.js";
+import otpRouter from "./routes/otp.js";
 const app = express();
 const port = process.env.WEB_PORT || 3002;
 const upload = multer();
@@ -69,6 +70,9 @@ app.use("/ecpay", Ecpay);
 
 // 7-11 門市選擇
 app.use("/shipment", shipment711);
+
+// OTP路由
+app.use("/otp", otpRouter);
 
 // 定義路由，get 接收方式，"/" 路徑
 app.get("/", (req, res) => {
