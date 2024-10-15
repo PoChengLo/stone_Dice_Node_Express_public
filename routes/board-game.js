@@ -187,7 +187,6 @@ router.post("/pay-ship", async (req, res) => {
 });
 
 router.get("/success", async (req, res) => {
-
   let new_ord, new_ord_list_id, new_ord_item, ord_update;
   const user_id = Number(req.query.user_id);
   const new_ord_sql = `SELECT * FROM prod_ord_list WHERE user_id = ${user_id} ORDER BY ord_date DESC LIMIT 1`;
@@ -221,7 +220,30 @@ router.get("/success", async (req, res) => {
     new_ord_item,
     ord_update,
   });
+});
 
+// 會員獲取所有訂單資料
+router.get("/all-order-list", async (req, res) => {
+  let all_ord_list, query_ord_item;
+  const user_id = Number(req.query.user_id);
+  const ord_id = Number(req.query.ord_id);
+  const all_ord_list_sql = `SELECT * FROM prod_ord_list WHERE user_id = ${user_id} ORDER BY ord_id DESC`;
+  const query_ord_item_sql = `SELECT * FROM prod_ord_item WHERE ord_id = ${ord_id} `;
+  try {
+    const [allOrd] = await db.query(all_ord_list_sql, [user_id]);
+    all_ord_list = allOrd;
+    const [queryOrdItem] = await db.query(query_ord_item_sql, [ord_id]);
+    query_ord_item = queryOrdItem;
+  } catch (e) {
+    console.log(e);
+  }
+  res.json({
+    success: true,
+    data: {
+      all_ord_list,
+      query_ord_item,
+    },
+  });
 });
 
 // 商品單獨頁路由
