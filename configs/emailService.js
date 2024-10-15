@@ -33,7 +33,7 @@ export const sendOTPEmail = async (to, otp) => {
       
       <p style="font-size: 16px; color: #333;">在你踏上尋找失落寶藏的征途之際，古老的石之骰已經回應了你的召喚。它為你鑄造了一枚強大的符文，蘊含著穿越密室、解開謎題的神秘力量。</p>
       
-      <p style="font-size: 16px; color: #333;">請謹記，這枚符文蘊含著強大而短暫的魔力。你必須在接下來的 30 分鐘內使用它，否則它將消散於風中。</p>
+      <p style="font-size: 16px; color: #333;">請謹記，這枚符文蘊含著強大而短暫的魔力。你必須在接下來的 3 分鐘內使用它，否則它將消散於風中。</p>
       
       <p style="font-size: 18px; text-align: center;">你的神秘符文是：</p>
       
