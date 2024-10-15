@@ -39,3 +39,5 @@ INSERT INTO `prod_ord_list`( `user_id`, `ord_total`, `ord_pay`, `ord_recipient_n
 -- 選取會員的最新資料
 SELECT * FROM prod_ord_list WHERE user_id = 2024001 ORDER BY ord_date DESC LIMIT 1;
 
+-- 獲取會員所有訂單
+SELECT * FROM prod_ord_list WHERE user_id = 2024001
