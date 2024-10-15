@@ -117,7 +117,7 @@ router.get("/check-success/:ord_id", async (req, res) => {
 router.get("/userid/:userid", async (req, res) => {
   try {
     const { userid } = req.params;
-    const sql = `SELECT * FROM larp_ord_list WHERE user_id = ${userid}`;
+    const sql = `SELECT * FROM larp_ord_list WHERE user_id = ${userid} ORDER BY ord_id DESC`;
     const [row] = await db.query(sql);
     res.status(200).json(row);
   } catch (error) {
