@@ -33,9 +33,13 @@ router.get("/", async (req, res) => {
   }
 
   // 價格, 1100~2800 (查詢字串QS: price_min=1100&price_max=2800)
-  const price_min = Number(req.query.price_min) || 1100; // 最小價格
-  const price_max = Number(req.query.price_max) || 2800; // 最大價格
+  const price_min = Number(req.query.price_min) || 1000; // 最小價格
+  const price_max = Number(req.query.price_max) || 3000; // 最大價格
   conditions[1] = `price BETWEEN ${price_min} AND ${price_max}`;
+
+  // 標籤分類
+  const tag_id = req.query.tag_id || "";
+  conditions[2] = req.query.tag_id ? `pt.tag_id = ${tag_id}` : "";
 
   // 以下開始組合where從句
   // 1. 過濾有空白條件情況
@@ -48,18 +52,29 @@ router.get("/", async (req, res) => {
 
   // where條件 ---- END
 
-  // let orderBy2 = "";
-  // const orderby = req.query.orderby;
-  // switch (orderby) {
-  //   case "id_asc":
-  //     orderBy2 = " ORDER BY id ASC";
-  //     break;
-  //   case "id_desc":
-  //     orderBy2 = " ORDER BY id DESC";
-  //     break;
-  // }
+  // select_from條件 --- START
+  let select;
+  let from;
+  if (tag_id == "") {
+    select = `SELECT * `;
+    from = `FROM prod_list `;
+  } else {
+    select = `SELECT pl.*,pt.tag_id `;
+    from = `FROM prod_list pl JOIN prod_tag pt ON pl.id = pt.id `;
+  }
+
+  const select_from = `${select}${from}`;
+  const select_count_from = `SELECT COUNT(*) AS count ${from}`;
+  // select_from條件 --- END
+
   // 排序，例如價格由低到高 (查詢字串qs: sort=price&order=asc) (順向asc，逆向desc)
-  const sort = req.query.sort || "id"; // 預設的排序資料表欄位
+  let tag_sort;
+  if (tag_id == "") {
+    tag_sort = "id";
+  } else {
+    tag_sort = "pl.id";
+  }
+  const sort = req.query.sort || tag_sort; // 預設的排序資料表欄位
   const order = req.query.order || "ASC"; //預設使用順向 asc (1234..)
   // 建立sql從句字串
   const orderBy = `ORDER BY ${sort} ${order}`;
@@ -72,14 +87,12 @@ router.get("/", async (req, res) => {
   const limit = perpage;
   const offset = (page - 1) * perpage;
 
-  const sql = `SELECT * FROM prod_list ${where} ${orderBy} LIMIT ${limit} OFFSET ${offset}`;
+  const sql = `${select_from} ${where} ${orderBy} LIMIT ${limit} OFFSET ${offset}`;
 
   const [rows] = await db.query(sql);
 
   // 進行分頁時，額外執行sql在此條件下總共多少筆資料
-  const [rows2] = await db.query(
-    `SELECT COUNT(*) AS count FROM prod_list ${where} ${orderBy}`
-  );
+  const [rows2] = await db.query(`${select_count_from} ${where} ${orderBy}`);
 
   const { count } = rows2[0];
   // 計算總頁數
@@ -155,6 +168,7 @@ router.post("/pay-ship", async (req, res) => {
     new_ord_list_id = new_ord.insertId;
     const new_cart_item_sql = `INSERT INTO prod_ord_item (ord_id, id, prod_name, item_price, item_qty, item_total ) VALUES(?, ?, ?, ?, ?, ?)`;
     const new_ord_item_sql = `SELECT * FROM prod_ord_item WHERE ord_id = ${new_ord_list_id}`;
+    const update_prod_stock_sql = `UPDATE prod_list SET prod_sales = prod_sales + ? , prod_stock = prod_stock - ?  WHERE id = ?`;
     for (const cart_item of cart_data) {
       await db.query(new_cart_item_sql, [
         `${new_ord_list_id}`,
@@ -163,6 +177,12 @@ router.post("/pay-ship", async (req, res) => {
         cart_item.price,
         cart_item.quantity,
         cart_item.subtotal,
+      ]);
+      // 修改商品庫存與銷售數量
+      await db.query(update_prod_stock_sql, [
+        cart_item.quantity,
+        cart_item.quantity,
+        cart_item.id,
       ]);
     }
     console.log("新增訂單項目");

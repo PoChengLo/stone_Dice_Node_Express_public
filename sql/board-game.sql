@@ -16,7 +16,7 @@ SELECT * FROM prod_list WHERE prod_name LIKE '%魔法%' AND price >= 2000 AND pr
 SELECT * FROM prod_list ORDER BY price ASC;
 
 -- 測試
-SELECT pl.*,tl.tag_name FROM prod_list pl  JOIN prod_tag pt ON pl.id = pt.id JOIN tag_list tl ON pt.tag_id = tl.tag_id;
+SELECT pl.*,pt.tag_id,tl.tag_name FROM prod_list pl  JOIN prod_tag pt ON pl.id = pt.id  JOIN tag_list tl ON pt.tag_id = tl.tag_id;
 
 -- 測試
 SELECT * FROM recipient_info WHERE user_id = 2024001;
@@ -41,3 +41,10 @@ SELECT * FROM prod_ord_list WHERE user_id = 2024001 ORDER BY ord_date DESC LIMIT
 
 -- 獲取會員所有訂單
 SELECT * FROM prod_ord_list WHERE user_id = 2024001
+
+
+-- 測試
+SELECT pl.*,pt.tag_id FROM prod_list pl JOIN prod_tag pt ON pl.id = pt.id WHERE pt.tag_id = 28;
+
+-- 新增銷售數量同時刪減商品庫存
+UPDATE prod_list SET prod_sales = prod_sales + 1 , prod_stock = prod_stock - 1  WHERE id = 201
