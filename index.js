@@ -21,7 +21,12 @@ app.use(cookieParser());
 // cors設定，參數為必要，注意不要只寫`app.use(cors())`
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://localhost:9000","https://stone-dice-next-public.vercel.app"],
+    origin: [
+      "http://localhost:3000",
+      "https://localhost:9000",
+      "https://stone-dice-next-public.vercel.app",
+      "https://main.d9qhhlcgc51yq.amplifyapp.com",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
