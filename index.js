@@ -19,18 +19,20 @@ app.use(cookieParser());
 
 // 頂層中介軟體 開始
 // cors設定，參數為必要，注意不要只寫`app.use(cors())`
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://localhost:9000",
-      "https://stone-dice-next-public.vercel.app",
-      "https://main.d9qhhlcgc51yq.amplifyapp.com",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:3000",
+//       "https://localhost:9000",
+//       "https://stone-dice-next-public.vercel.app",
+//       "https://main.d9qhhlcgc51yq.amplifyapp.com",
+//     ],
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true,
+//   })
+// );
+
+app.use(cors());
 // 剖析 POST 與 PUT 要求的JSON格式資料
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
